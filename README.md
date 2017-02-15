@@ -9,7 +9,7 @@ to a record in Kafka.
 
 ```properties
 name=MySinkConnector
-connector.class=com.github.jcustenborder.kafka.connect.MySinkConnector
+connector.class=com.github.jcustenborder.kafka.connect.snmp.SnmpTrapSourceConnector
 ```
 
 | Name                        | Description                                                  | Type   | Default | Valid Values                     | Importance |
