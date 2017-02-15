@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.github.jcustenborder.kafka.connect</groupId>
+    <artifactId>kafka-connect-parent</artifactId>
+    <version>0.10.1.0-cp1</version>
+  </parent>
+  <artifactId>kafka-connect-snmp</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>kafka-connect-snmp</name>
+  <description>A Kafka Connect Connector for kafka-connect-snmp</description>
+  <url>https://github.com/jcustenborder/kafka-connect-snmp</url>
+  <inceptionYear>2017</inceptionYear>
+  <licenses>
+    <license>
+      <name>Apache License 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Jeremy Custenborder</name>
+      <email>jeremy@confluent.io</email>
+      <url>https://github.com/jcustenborder</url>
+      <roles>
+        <role>maintainer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/jcustenborder/kafka-connect-snmp.git</connection>
+    <developerConnection>scm:git:git@github.com:jcustenborder/kafka-connect-snmp.git</developerConnection>
+    <url>https://github.com/jcustenborder/kafka-connect-snmp</url>
+  </scm>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/jcustenborder/kafka-connect-snmp/issues</url>
+  </issueManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.snmp4j</groupId>
+      <artifactId>snmp4j</artifactId>
+      <version>2.5.5</version>
+    </dependency>
+  </dependencies>
+</project>
