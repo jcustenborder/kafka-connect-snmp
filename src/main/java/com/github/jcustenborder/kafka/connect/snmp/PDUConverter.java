@@ -37,41 +37,37 @@ import java.util.Map;
 public class PDUConverter {
   private static final Logger log = LoggerFactory.getLogger(PDUConverter.class);
   private final Time time;
-  private final Schema keySchema;
-  private final Schema valueSchema;
-  private final Schema variableBindingSchema;
+  static final Schema KEY_SCHEMA = SchemaBuilder.struct()
+      .name("com.github.jcustenborder.kafka.connect.snmp.TrapKey")
+      .field(KeySchemaConstants.FIELD_PEER_ADDRESS, SchemaBuilder.string().doc("Remote address of the host sending the trap.").build())
+      .build();
+  static final Schema VARIABLE_BINDING_SCHEMA = SchemaBuilder.struct()
+      .name("com.github.jcustenborder.kafka.connect.snmp.VariableBinding")
+      .field(VariableBindingConstants.FIELD_OID, SchemaBuilder.string().doc("OID.").build())
+      .field(VariableBindingConstants.FIELD_TYPE, SchemaBuilder.string().doc("Syntax type for variable binding.").build())
+      .field(VariableBindingConstants.FIELD_COUNTER32, SchemaBuilder.int32().doc("Counter32 value.").optional().build())
+      .field(VariableBindingConstants.FIELD_COUNTER64, SchemaBuilder.int64().doc("Counter64 value.").optional().build())
+      .field(VariableBindingConstants.FIELD_GAUGE32, SchemaBuilder.int32().doc("Gauge32 value.").optional().build())
+      .field(VariableBindingConstants.FIELD_INTEGER, SchemaBuilder.int32().doc("Integer value.").optional().build())
+      .field(VariableBindingConstants.FIELD_IPADDRESS, SchemaBuilder.string().doc("IpAddress value.").optional().build())
+      .field(VariableBindingConstants.FIELD_NULL, SchemaBuilder.string().doc("null value.").optional().build())
+      .field(VariableBindingConstants.FIELD_OBJECTIDENTIFIER, SchemaBuilder.string().doc("OID value.").optional().build())
+      .field(VariableBindingConstants.FIELD_OCTETSTRING, SchemaBuilder.string().doc("Octet string value.").optional().build())
+      .field(VariableBindingConstants.FIELD_OPAQUE, SchemaBuilder.string().doc("opaque value.").optional().build())
+      .field(VariableBindingConstants.FIELD_TIMETICKS, SchemaBuilder.int32().doc("timeticks value.").optional().build())
+      .build();
+  static final Schema VALUE_SCHEMA = SchemaBuilder.struct()
+      .name("com.github.jcustenborder.kafka.connect.snmp.Trap")
+      .field(ValueSchemaConstants.FIELD_PEER_ADDRESS, SchemaBuilder.string().doc("Remote address of the host sending the trap.").build())
+      .field(ValueSchemaConstants.FIELD_SECURITY_NAME, SchemaBuilder.string().doc("Community name the event was sent to.").build())
+      .field(ValueSchemaConstants.FIELD_VARAIBLES, SchemaBuilder.array(VARIABLE_BINDING_SCHEMA).doc("Variables for this trap.").build())
+      .build();
+
   private final SnmpTrapSourceConnectorConfig config;
 
   public PDUConverter(Time time, SnmpTrapSourceConnectorConfig config) {
     this.time = time;
     this.config = config;
-    this.keySchema = SchemaBuilder.struct()
-        .name("com.github.jcustenborder.kafka.connect.snmp.TrapKey")
-        .field(KeySchemaConstants.FIELD_PEER_ADDRESS, SchemaBuilder.string().doc("Remote address of the host sending the trap.").build())
-        .build();
-
-    this.variableBindingSchema = SchemaBuilder.struct()
-        .name("com.github.jcustenborder.kafka.connect.snmp.VariableBinding")
-        .field(VariableBindingConstants.FIELD_OID, SchemaBuilder.string().doc("OID.").build())
-        .field(VariableBindingConstants.FIELD_TYPE, SchemaBuilder.string().doc("Syntax type for variable binding.").build())
-        .field(VariableBindingConstants.FIELD_COUNTER32, SchemaBuilder.int32().doc("Counter32 value.").optional().build())
-        .field(VariableBindingConstants.FIELD_COUNTER64, SchemaBuilder.int64().doc("Counter64 value.").optional().build())
-        .field(VariableBindingConstants.FIELD_GAUGE32, SchemaBuilder.int32().doc("Gauge32 value.").optional().build())
-        .field(VariableBindingConstants.FIELD_INTEGER, SchemaBuilder.int32().doc("Integer value.").optional().build())
-        .field(VariableBindingConstants.FIELD_IPADDRESS, SchemaBuilder.string().doc("IpAddress value.").optional().build())
-        .field(VariableBindingConstants.FIELD_NULL, SchemaBuilder.string().doc("null value.").optional().build())
-        .field(VariableBindingConstants.FIELD_OBJECTIDENTIFIER, SchemaBuilder.string().doc("OID value.").optional().build())
-        .field(VariableBindingConstants.FIELD_OCTETSTRING, SchemaBuilder.string().doc("Octet string value.").optional().build())
-        .field(VariableBindingConstants.FIELD_OPAQUE, SchemaBuilder.string().doc("opaque value.").optional().build())
-        .field(VariableBindingConstants.FIELD_TIMETICKS, SchemaBuilder.int32().doc("timeticks value.").optional().build())
-        .build();
-
-    this.valueSchema = SchemaBuilder.struct()
-        .name("com.github.jcustenborder.kafka.connect.snmp.Trap")
-        .field(ValueSchemaConstants.FIELD_PEER_ADDRESS, SchemaBuilder.string().doc("Remote address of the host sending the trap.").build())
-        .field(ValueSchemaConstants.FIELD_SECURITY_NAME, SchemaBuilder.string().doc("Community name the event was sent to.").build())
-        .field(ValueSchemaConstants.FIELD_VARAIBLES, SchemaBuilder.array(this.variableBindingSchema).doc("Variables for this trap.").build())
-        .build();
   }
 
   class KeySchemaConstants {
@@ -102,7 +98,7 @@ public class PDUConverter {
 
   Struct convertVariableBinding(VariableBinding binding) {
     log.trace("convertVariableBinding() - converting {}", binding);
-    Struct struct = new Struct(this.variableBindingSchema);
+    Struct struct = new Struct(this.VARIABLE_BINDING_SCHEMA);
 
     final String oid = binding.getOid().toDottedString();
     log.trace("convertVariableBinding() - oid = '{}'", oid);
@@ -170,8 +166,8 @@ public class PDUConverter {
   static final Map<String, Object> EMPTY = ImmutableMap.of();
 
   public SourceRecord convert(CommandResponderEvent event) {
-    Struct key = new Struct(this.keySchema);
-    Struct value = new Struct(this.valueSchema);
+    Struct key = new Struct(this.KEY_SCHEMA);
+    Struct value = new Struct(this.VALUE_SCHEMA);
 
     final PDU pdu = event.getPDU();
 
@@ -204,9 +200,9 @@ public class PDUConverter {
         EMPTY,
         this.config.topic,
         null,
-        this.keySchema,
+        this.KEY_SCHEMA,
         key,
-        this.valueSchema,
+        this.VALUE_SCHEMA,
         value,
         this.time.milliseconds()
     );
