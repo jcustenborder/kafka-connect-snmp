@@ -15,6 +15,9 @@
  */
 package com.github.jcustenborder.kafka.connect.snmp;
 
+import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
+import com.github.jcustenborder.kafka.connect.utils.config.Description;
+import com.github.jcustenborder.kafka.connect.utils.config.DocumentationImportant;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.source.SourceConnector;
@@ -25,6 +28,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+@DocumentationImportant("This connector listens on a network port. Running more than one task or running in distributed " +
+    "mode can cause some undesired effects if another task already has the port open. It is recommended that you run this " +
+    "connector in :term:`Standalone Mode`.")
+@Description("Connector is used to receive syslog messages over UDP.")
 public class SnmpTrapSourceConnector extends SourceConnector {
   private static Logger log = LoggerFactory.getLogger(SnmpTrapSourceConnector.class);
   private SnmpTrapSourceConnectorConfig config;
@@ -32,7 +39,7 @@ public class SnmpTrapSourceConnector extends SourceConnector {
 
   @Override
   public String version() {
-    return VersionUtil.getVersion();
+    return VersionUtil.version(this.getClass());
   }
 
   @Override
