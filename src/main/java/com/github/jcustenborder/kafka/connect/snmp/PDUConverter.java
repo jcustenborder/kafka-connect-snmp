@@ -159,6 +159,7 @@ public class PDUConverter {
     log.trace("convertVariableBinding() - syntaxType = '{}'", syntaxType);
     struct.put(VariableBindingConstants.FIELD_TYPE, syntaxType);
     log.trace("convertVariableBinding() - Setting field '{}' to '{}'.", syntaxType, value);
+    struct.put(syntaxType, value);
     struct.validate();
     return struct;
   }
