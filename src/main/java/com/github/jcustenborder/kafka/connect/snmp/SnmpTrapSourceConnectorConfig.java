@@ -78,7 +78,7 @@ public class SnmpTrapSourceConnectorConfig extends AbstractConfig {
     return new ConfigDef()
         .define(TOPIC_CONF, Type.STRING, Importance.HIGH, TOPIC_DOC)
         .define(LISTEN_ADDRESS_CONF, Type.STRING, LISTEN_ADDRESS_DEFAULT, Importance.LOW, LISTEN_ADDRESS_DOC)
-        .define(LISTEN_PORT_CONF, Type.INT, LISTEN_PORT_DEFAULT, ValidPort.of(), Importance.LOW, LISTEN_PORT_DOC)
+        .define(LISTEN_PORT_CONF, Type.INT, LISTEN_PORT_DEFAULT, ValidPort.of(161, 65535), Importance.LOW, LISTEN_PORT_DOC)
         .define(LISTEN_PROTOCOL_CONF, Type.STRING, LISTEN_PROTOCOL_DEFAULT, ConfigDef.ValidString.in("UDP", "TCP"), Importance.LOW, LISTEN_PROTOCOL_DOC)
         .define(DISPATCHER_THREAD_POOL_SIZE_CONF, Type.INT, DISPATCHER_THREAD_POOL_SIZE_DEFAULT, ConfigDef.Range.between(1, 100), Importance.LOW, DISPATCHER_THREAD_POOL_SIZE_DOC)
         .define(BATCH_SIZE_CONF, Type.INT, BATCH_SIZE_DEFAULT, ConfigDef.Range.between(10, Integer.MAX_VALUE), Importance.MEDIUM, BATCH_SIZE_DOC)
