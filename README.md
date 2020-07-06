@@ -1,3 +1,5 @@
+![Build](https://github.com/vilvo/kafka-connect-snmp/workflows/Build/badge.svg)
+
 # Introduction 
 
 This connector is used to receive data from devices via SNMP. This connector will receive SNMP traps and convert them
