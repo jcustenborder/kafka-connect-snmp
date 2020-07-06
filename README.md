@@ -1,4 +1,4 @@
-![Build](https://github.com/vilvo/kafka-connect-snmp/workflows/Build/badge.svg)
+![Build](https://github.com/ElisaOyj/kafka-connect-snmp/workflows/Build/badge.svg)
 
 # Introduction 
 
