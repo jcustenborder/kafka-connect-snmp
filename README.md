@@ -1,18 +1,23 @@
-![Build](https://github.com/vilvo/kafka-connect-snmp/workflows/Build/badge.svg)
+![Build](https://github.com/ElisaOyj/kafka-connect-snmp/workflows/Build/badge.svg)
 
 # Introduction 
 
-This connector is used to receive data from devices via SNMP. This connector will receive SNMP traps and convert them
-to a record in Kafka. 
+`kafka-connect-snmp` connector is used to receive SNMP traps and convert them to a record in Kafka.
+
+See [Connectors to Kafka](https://docs.confluent.io/current/connect/managing/index.html) for more info.
 
 # Configuration 
 
-## SnmpTrapSourceConnector
+`kafka-connect-snmp` can be configured with properties or using [Kafka Connect REST Interface](https://docs.confluent.io/5.5.1/connect/references/restapi.html).
+
+## SnmpTrapSourceConnector config
 
 ```properties
 name=MySinkConnector
 connector.class=com.github.jcustenborder.kafka.connect.snmp.SnmpTrapSourceConnector
 ```
+
+### Config
 
 | Name                        | Description                                                  | Type   | Default | Valid Values                     | Importance |
 |-----------------------------|--------------------------------------------------------------|--------|---------|----------------------------------|------------|
@@ -27,33 +32,10 @@ connector.class=com.github.jcustenborder.kafka.connect.snmp.SnmpTrapSourceConnec
 
 # Running in development
 
+The development setup runs with `docker-compose`
 
-The [docker-compose.yml](docker-compose.yml) that is included in this repository is based on the Confluent Platform Docker
-images. Take a look at the [quickstart](http://docs.confluent.io/3.0.1/cp-docker-images/docs/quickstart.html#getting-started-with-docker-client)
-for the Docker images. 
-
-The hostname `confluent` must be resolvable by your host. You will need to determine the ip address of your docker-machine using `docker-machine ip confluent` 
-and add this to your `/etc/hosts` file. For example if `docker-machine ip confluent` returns `192.168.99.100` add this:
-
+Use
 ```
-192.168.99.100  confluent
+bin/run.sh
 ```
-
-
-```
-docker-compose up -d
-```
-
-
-Start the connector with debugging enabled.
- 
-```
-./bin/debug.sh
-```
-
-Start the connector with debugging enabled. This will wait for a debugger to attach.
-
-```
-export SUSPEND='y'
-./bin/debug.sh
-```
+to build, start the environment and configure the connector using REST API
