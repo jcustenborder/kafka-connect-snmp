@@ -25,7 +25,7 @@ KAFKA_CONNECT_IMAGE="confluentinc/cp-kafka-connect"
 KAFKA_VERSION="$(cat docker-compose.yml | grep $KAFKA_CONNECT_IMAGE | cut -d ':' -f 3)"
 echo "Running kafka-connect-snmp with $KAFKA_CONNECT_IMAGE:$KAFKA_VERSION"
 
-export KAFKA_CONNECT_CONTAINER="$(docker ps --filter ancestor=$KAFKA_CONNECT_IMAGE:$KAFKA_VERSION -q)"
+KAFKA_CONNECT_CONTAINER="$(docker ps --filter ancestor=$KAFKA_CONNECT_IMAGE:$KAFKA_VERSION -q)"
 
 if [ -n "${KAFKA_CONNECT_CONTAINER}" ]; then
     echo "$KAFKA_CONNECT_IMAGE:$KAFKA_VERSION running with container id $KAFKA_CONNECT_CONTAINER"
