@@ -17,8 +17,10 @@ jobs:
           java-version: '8'
       - name: Build with Maven
         run: mvn -B package --file pom.xml
-      - name: Archive snapshot
+      - name: Tar files
+        run: tar -czvf kafka-connect-snmp-latest.tgz -C target/kafka-connect-target/ .
+      - name: Upload artifact
         uses: actions/upload-artifact@v1
         with:
-          name: kafka-connect-snmp-0.0.3.jar
-          path: ./target/kafka-connect-snmp-0.0.3.jar
+          name: kafka-connect-snmp-latest.tgz
+          path: kafka-connect-snmp-latest.tgz
