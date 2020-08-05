@@ -9,7 +9,7 @@
         <version>1.0.0</version>
     </parent>
     <artifactId>kafka-connect-snmp</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.3</version>
     <name>kafka-connect-snmp</name>
     <description>A Kafka Connect Connector for kafka-connect-snmp</description>
     <url>https://github.com/ElisaOyj/kafka-connect-snmp.git</url>

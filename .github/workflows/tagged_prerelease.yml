@@ -1,4 +1,4 @@
-name: "tagged-prerelease"
+name: "tagged-release"
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   tagged-release:
-    name: "Tagged Pre-release"
+    name: "Tagged Release"
     runs-on: "ubuntu-latest"
 
     steps:
@@ -22,7 +22,7 @@ jobs:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
+          prerelease: false
           files: |
             LICENSE.txt
-            target/*.jar
+            target/kafka-connect-snmp-0.0.3.jar
