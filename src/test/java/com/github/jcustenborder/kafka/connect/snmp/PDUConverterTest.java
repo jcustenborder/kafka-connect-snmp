@@ -3,7 +3,6 @@ package com.github.jcustenborder.kafka.connect.snmp;
 import org.apache.kafka.common.utils.SystemTime;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.source.SourceRecord;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.snmp4j.CommandResponderEvent;
@@ -11,17 +10,18 @@ import org.snmp4j.PDU;
 import org.snmp4j.smi.Address;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.github.jcustenborder.kafka.connect.snmp.PDUGen.createTrap;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Johannes on 26.8.2021.
- */
 @SuppressWarnings("unchecked")
 class PDUConverterTest {
 

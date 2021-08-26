@@ -24,7 +24,9 @@ import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
 import org.snmp4j.mp.SnmpConstants;
-import org.snmp4j.smi.*;
+import org.snmp4j.smi.Address;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.UdpAddress;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 import java.io.IOException;
@@ -32,9 +34,12 @@ import java.net.SocketException;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.jcustenborder.kafka.connect.snmp.PDUGen.*;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static com.github.jcustenborder.kafka.connect.snmp.PDUGen.createNonTrap;
+import static com.github.jcustenborder.kafka.connect.snmp.PDUGen.createTrap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SnmpTrapSourceTaskTest {
   private SnmpTrapSourceTask task;

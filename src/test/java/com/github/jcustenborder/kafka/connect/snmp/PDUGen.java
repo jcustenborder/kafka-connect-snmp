@@ -2,11 +2,13 @@ package com.github.jcustenborder.kafka.connect.snmp;
 
 import org.snmp4j.PDU;
 import org.snmp4j.mp.SnmpConstants;
-import org.snmp4j.smi.*;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.TimeTicks;
+import org.snmp4j.smi.Variable;
+import org.snmp4j.smi.VariableBinding;
 
-/**
- * Johannes on 26.8.2021.
- */
+
 public class PDUGen {
   public static VariableBinding createVarBinding(String oidString, String oidVal) {
     OID oid = new OID(oidString);
