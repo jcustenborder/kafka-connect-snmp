@@ -189,5 +189,4 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
   public SnmpTrapSourceConnectorConfig getConfig() {
     return config;
   }
-
 }
