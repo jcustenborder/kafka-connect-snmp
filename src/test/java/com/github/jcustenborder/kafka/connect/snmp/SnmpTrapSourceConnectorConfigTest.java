@@ -26,7 +26,8 @@ public class SnmpTrapSourceConnectorConfigTest {
 
   public static Map<String, String> settings() {
     return ImmutableMap.of(
-        SnmpTrapSourceConnectorConfig.TOPIC_CONF, "testing"
+        SnmpTrapSourceConnectorConfig.TOPIC_CONF, "testing",
+        SnmpTrapSourceConnectorConfig.BATCH_SIZE_CONF, "10"
     );
   }
 
