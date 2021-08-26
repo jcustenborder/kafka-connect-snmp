@@ -15,7 +15,6 @@
  */
 package com.github.jcustenborder.kafka.connect.snmp;
 
-import com.github.jcustenborder.kafka.connect.utils.config.ValidPort;
 import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
