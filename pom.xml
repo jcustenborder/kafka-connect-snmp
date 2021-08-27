@@ -74,6 +74,7 @@
             <groupId>com.github.jcustenborder</groupId>
             <artifactId>docker-compose-junit-extension</artifactId>
             <version>0.1.6</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
