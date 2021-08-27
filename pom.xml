@@ -52,12 +52,6 @@
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
-    <repositories>
-        <repository>
-            <id>palantir</id>
-            <url>https://dl.bintray.com/palantir/releases/</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <!-- Doesn't seem to have breaking changes when upping from 2.6.x to 3.5.x (https://www.snmp4j.org/CHANGES.txt) -->
@@ -75,6 +69,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>30.1.1-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jcustenborder</groupId>
+            <artifactId>docker-compose-junit-extension</artifactId>
+            <version>0.1.6</version>
         </dependency>
     </dependencies>
     <build>
