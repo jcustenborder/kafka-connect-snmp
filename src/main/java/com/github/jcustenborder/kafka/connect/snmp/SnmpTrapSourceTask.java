@@ -1,12 +1,12 @@
 /**
  * Copyright © 2017 Jeremy Custenborder (jcustenborder@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,6 @@ import org.snmp4j.mp.MPv2c;
 import org.snmp4j.security.Priv3DES;
 import org.snmp4j.security.SecurityProtocols;
 import org.snmp4j.smi.TcpAddress;
-import org.snmp4j.smi.TransportIpAddress;
 import org.snmp4j.smi.UdpAddress;
 import org.snmp4j.transport.AbstractTransportMapping;
 import org.snmp4j.transport.DefaultTcpTransportMapping;
@@ -59,50 +58,26 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
   }
 
   SnmpTrapSourceConnectorConfig config;
-  AbstractTransportMapping transport;
+  AbstractTransportMapping<?> transport;
   ThreadPool threadPool;
   MessageDispatcher messageDispatcher;
   Snmp snmp;
   PDUConverter converter;
   Time time = new SystemTime();
-  SourceRecordConcurrentLinkedDeque recordBuffer;
+  private SourceRecordConcurrentLinkedDeque recordBuffer;
 
   @Override
   public void start(Map<String, String> settings) {
     this.config = new SnmpTrapSourceConnectorConfig(settings);
     this.converter = new PDUConverter(this.time, config);
-    this.recordBuffer = new SourceRecordConcurrentLinkedDeque();
-    log.trace("start() - Setting listen address to {}", this.config.listenAddress);
-    InetAddress inetAddress;
-    try {
-      inetAddress = InetAddress.getByName(this.config.listenAddress);
-    } catch (UnknownHostException e) {
-      throw new ConnectException("Exception thrown while trying to resolve " + this.config.listenAddress, e);
-    }
+    this.recordBuffer = new SourceRecordConcurrentLinkedDeque(this.config.batchSize, 0);
+    log.info("start() - Setting listen address with {} on {}:{}", this.config.listenProtocol, this.config.listenAddress, this.config.listenPort);
 
-    TransportIpAddress transportAddress;
-    try {
-      if ("UDP".equals(this.config.listenProtocol)) {
-        transportAddress = new UdpAddress(inetAddress, this.config.listenPort);
-        this.transport = new DefaultUdpTransportMapping((UdpAddress) transportAddress);
-      } else {
-        transportAddress = new TcpAddress(inetAddress, this.config.listenPort);
-        this.transport = new DefaultTcpTransportMapping((TcpAddress) transportAddress);
-      }
-    } catch (IOException ex) {
-      throw new ConnectException("Exception thrown while configuring transport.", ex);
-    }
-    log.trace("start() - Transport IP Address configured to {}", transportAddress);
-    log.info("Transport IP Address configured to {}", transportAddress);
+    this.transport = setupTransport(this.config.listenAddress, this.config.listenProtocol, this.config.listenPort);
 
-    log.trace("start() - Configuring ThreadPool DispatchPool to {} thread(s)", this.config.dispatcherThreadPoolSize);
+    log.info("start() - Configuring ThreadPool DispatchPool to {} thread(s)", this.config.dispatcherThreadPoolSize);
     this.threadPool = ThreadPool.create("DispatchPool", this.config.dispatcherThreadPoolSize);
-
-    this.messageDispatcher = new MultiThreadedMessageDispatcher(this.threadPool, new MessageDispatcherImpl());
-    this.messageDispatcher.addMessageProcessingModel(new MPv1());
-    this.messageDispatcher.addMessageProcessingModel(new MPv2c());
-    SecurityProtocols.getInstance().addDefaultProtocols();
-    SecurityProtocols.getInstance().addPrivacyProtocol(new Priv3DES());
+    this.messageDispatcher = createMessageDispatcher(this.threadPool);
 
     try {
       this.transport.listen();
@@ -142,7 +117,6 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
 
   }
 
-
   @Override
   public void processPdu(CommandResponderEvent event) {
     log.trace("processPdu() - Received event from {}", event.getPeerAddress());
@@ -158,9 +132,61 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
       return;
     }
 
-    log.info("{}", event);
-
     SourceRecord sourceRecord = converter.convert(event);
     this.recordBuffer.add(sourceRecord);
+  }
+
+  private static AbstractTransportMapping<?> setupTransport(String address, String listenProtocol, int port) {
+    InetAddress inetAddress = setupAddress(address);
+
+    try {
+      if ("UDP".equals(listenProtocol)) {
+        return setupUdpTransport(inetAddress, port);
+      } else {
+        return setupTcpTransport(inetAddress, port);
+      }
+    } catch (IOException ex) {
+      throw new ConnectException("Exception thrown while configuring transport.", ex);
+    }
+  }
+
+  private static DefaultUdpTransportMapping setupUdpTransport(InetAddress addr, int port) throws IOException {
+    UdpAddress udpAddress = new UdpAddress(addr, port);
+    return new DefaultUdpTransportMapping(udpAddress);
+  }
+
+  private static DefaultTcpTransportMapping setupTcpTransport(InetAddress addr, int port) throws IOException {
+    TcpAddress tcpAddress = new TcpAddress(addr, port);
+    return new DefaultTcpTransportMapping(tcpAddress);
+  }
+
+  private static InetAddress setupAddress(String listenAddress) throws ConnectException {
+    try {
+      return InetAddress.getByName(listenAddress);
+    } catch (UnknownHostException e) {
+      throw new ConnectException("Exception thrown while trying to resolve " + listenAddress, e);
+    }
+  }
+
+  private static void setupSecurityProtocols() {
+    SecurityProtocols.getInstance().addDefaultProtocols();
+    SecurityProtocols.getInstance().addPrivacyProtocol(new Priv3DES());
+  }
+
+  private static MessageDispatcher createMessageDispatcher(ThreadPool threadPool) {
+    // TODO Add MPv3 (usm, processingmodel)
+    MultiThreadedMessageDispatcher md = new MultiThreadedMessageDispatcher(threadPool, new MessageDispatcherImpl());
+    md.addMessageProcessingModel(new MPv1());
+    md.addMessageProcessingModel(new MPv2c());
+    setupSecurityProtocols();
+    return md;
+  }
+
+  public SourceRecordConcurrentLinkedDeque getRecordBuffer() {
+    return recordBuffer;
+  }
+
+  public SnmpTrapSourceConnectorConfig getConfig() {
+    return config;
   }
 }

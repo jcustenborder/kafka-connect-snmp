@@ -1,12 +1,12 @@
 /**
  * Copyright © 2017 Jeremy Custenborder (jcustenborder@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,7 @@
  */
 package com.github.jcustenborder.kafka.connect.snmp;
 
-import com.github.jcustenborder.kafka.connect.utils.config.ValidPort;
+import com.github.jcustenborder.kafka.connect.utils.config.validators.Validators;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
@@ -76,13 +76,13 @@ public class SnmpTrapSourceConnectorConfig extends AbstractConfig {
 
   public static ConfigDef conf() {
     return new ConfigDef()
-        .define(TOPIC_CONF, Type.STRING, Importance.HIGH, TOPIC_DOC)
-        .define(LISTEN_ADDRESS_CONF, Type.STRING, LISTEN_ADDRESS_DEFAULT, Importance.LOW, LISTEN_ADDRESS_DOC)
-        .define(LISTEN_PORT_CONF, Type.INT, LISTEN_PORT_DEFAULT, ValidPort.of(161, 65535), Importance.LOW, LISTEN_PORT_DOC)
-        .define(LISTEN_PROTOCOL_CONF, Type.STRING, LISTEN_PROTOCOL_DEFAULT, ConfigDef.ValidString.in("UDP", "TCP"), Importance.LOW, LISTEN_PROTOCOL_DOC)
-        .define(DISPATCHER_THREAD_POOL_SIZE_CONF, Type.INT, DISPATCHER_THREAD_POOL_SIZE_DEFAULT, ConfigDef.Range.between(1, 100), Importance.LOW, DISPATCHER_THREAD_POOL_SIZE_DOC)
-        .define(BATCH_SIZE_CONF, Type.INT, BATCH_SIZE_DEFAULT, ConfigDef.Range.between(10, Integer.MAX_VALUE), Importance.MEDIUM, BATCH_SIZE_DOC)
-        .define(POLL_BACKOFF_MS_CONF, Type.LONG, POLL_BACKOFF_MS_DEFAULT, ConfigDef.Range.between(10, Integer.MAX_VALUE), Importance.MEDIUM, POLL_BACKOFF_MS_DOC);
+            .define(TOPIC_CONF, Type.STRING, Importance.HIGH, TOPIC_DOC)
+            .define(LISTEN_ADDRESS_CONF, Type.STRING, LISTEN_ADDRESS_DEFAULT, Importance.LOW, LISTEN_ADDRESS_DOC)
+            .define(LISTEN_PORT_CONF, Type.INT, LISTEN_PORT_DEFAULT, Validators.validPort(161, 65535), Importance.LOW, LISTEN_PORT_DOC)
+            .define(LISTEN_PROTOCOL_CONF, Type.STRING, LISTEN_PROTOCOL_DEFAULT, ConfigDef.ValidString.in("UDP", "TCP"), Importance.LOW, LISTEN_PROTOCOL_DOC)
+            .define(DISPATCHER_THREAD_POOL_SIZE_CONF, Type.INT, DISPATCHER_THREAD_POOL_SIZE_DEFAULT, ConfigDef.Range.between(1, 100), Importance.LOW, DISPATCHER_THREAD_POOL_SIZE_DOC)
+            .define(BATCH_SIZE_CONF, Type.INT, BATCH_SIZE_DEFAULT, ConfigDef.Range.between(10, Integer.MAX_VALUE), Importance.MEDIUM, BATCH_SIZE_DOC)
+            .define(POLL_BACKOFF_MS_CONF, Type.LONG, POLL_BACKOFF_MS_DEFAULT, ConfigDef.Range.between(10, Integer.MAX_VALUE), Importance.MEDIUM, POLL_BACKOFF_MS_DOC);
   }
 
 }

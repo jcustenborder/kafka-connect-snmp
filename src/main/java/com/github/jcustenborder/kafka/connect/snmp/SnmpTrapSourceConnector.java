@@ -1,12 +1,12 @@
 /**
  * Copyright © 2017 Jeremy Custenborder (jcustenborder@gmail.com)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,15 +24,16 @@ import org.apache.kafka.connect.source.SourceConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @DocumentationImportant("This connector listens on a network port. Running more than one task or running in distributed " +
-    "mode can cause some undesired effects if another task already has the port open. It is recommended that you run this " +
-    "connector in :term:`Standalone Mode`.")
+        "mode can cause some undesired effects if another task already has the port open. It is recommended that you run this " +
+        "connector in :term:`Standalone Mode`.")
 @Description("Connector is used to receive syslog messages over UDP.")
 public class SnmpTrapSourceConnector extends SourceConnector {
+
   private static Logger log = LoggerFactory.getLogger(SnmpTrapSourceConnector.class);
   private SnmpTrapSourceConnectorConfig config;
   private Map<String, String> settings;
@@ -58,7 +59,7 @@ public class SnmpTrapSourceConnector extends SourceConnector {
     if (i > 1) {
       log.warn("This task only supports one instance of the connector.");
     }
-    return Arrays.asList(this.settings);
+    return Collections.singletonList(this.settings);
   }
 
   @Override
