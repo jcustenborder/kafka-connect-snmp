@@ -46,7 +46,7 @@
     </scm>
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/ElisaOyj/kafka-connect-snmp/issues</url>
+        <url>https://github.com/elisaautomate/kafka-connect-snmp/issues</url>
     </issueManagement>
 
     <properties>

@@ -1,4 +1,5 @@
 /**
+ * Copyright © 2021 Elisa Oyj
  * Copyright © 2017 Jeremy Custenborder (jcustenborder@gmail.com)
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,8 +32,17 @@ import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
 import org.snmp4j.mp.MPv1;
 import org.snmp4j.mp.MPv2c;
+import org.snmp4j.mp.MPv3;
+import org.snmp4j.security.AuthMD5;
+import org.snmp4j.security.AuthSHA;
 import org.snmp4j.security.Priv3DES;
+import org.snmp4j.security.PrivAES128;
+import org.snmp4j.security.SecurityModels;
 import org.snmp4j.security.SecurityProtocols;
+import org.snmp4j.security.USM;
+import org.snmp4j.security.UsmUser;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
 import org.snmp4j.smi.TcpAddress;
 import org.snmp4j.smi.UdpAddress;
 import org.snmp4j.transport.AbstractTransportMapping;
@@ -47,10 +57,11 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
   static final Logger log = LoggerFactory.getLogger(SnmpTrapSourceTask.class);
-
+  private SecurityProtocols securityProtocols;
 
   @Override
   public String version() {
@@ -61,7 +72,7 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
   AbstractTransportMapping<?> transport;
   ThreadPool threadPool;
   MessageDispatcher messageDispatcher;
-  Snmp snmp;
+  private Snmp snmp;
   PDUConverter converter;
   Time time = new SystemTime();
   private SourceRecordConcurrentLinkedDeque recordBuffer;
@@ -72,12 +83,14 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
     this.converter = new PDUConverter(this.time, config);
     this.recordBuffer = new SourceRecordConcurrentLinkedDeque(this.config.batchSize, 0);
     log.info("start() - Setting listen address with {} on {}:{}", this.config.listenProtocol, this.config.listenAddress, this.config.listenPort);
+    log.info("start() - MPv3 support: {}", this.config.mpv3Enabled);
 
     this.transport = setupTransport(this.config.listenAddress, this.config.listenProtocol, this.config.listenPort);
 
     log.info("start() - Configuring ThreadPool DispatchPool to {} thread(s)", this.config.dispatcherThreadPoolSize);
     this.threadPool = ThreadPool.create("DispatchPool", this.config.dispatcherThreadPoolSize);
-    this.messageDispatcher = createMessageDispatcher(this.threadPool);
+    this.messageDispatcher = createMessageDispatcher(this.threadPool, this.config.mpv3Enabled);
+    this.securityProtocols = setupSecurityProtocols(config.authenticationProtocols, config.privacyProtocols, this.config.mpv3Enabled);
 
     try {
       this.transport.listen();
@@ -87,6 +100,11 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
 
     this.snmp = new Snmp(this.messageDispatcher, this.transport);
     this.snmp.addCommandResponder(this);
+
+    if (this.config.mpv3Enabled) {
+      setupMpv3(this.snmp, this.config, this.securityProtocols);
+    }
+
   }
 
 
@@ -105,10 +123,13 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
 
   @Override
   public void stop() {
-    log.trace("stop() - stopping threadpool");
-    this.threadPool.stop();
+    log.info("stop() - stopping threadpool");
 
-    log.trace("stop() - closing transport.");
+    if (this.threadPool != null) {
+      this.threadPool.stop();
+    }
+
+    log.info("stop() - closing transport.");
     try {
       this.transport.close();
     } catch (IOException e) {
@@ -168,17 +189,76 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
     }
   }
 
-  private static void setupSecurityProtocols() {
-    SecurityProtocols.getInstance().addDefaultProtocols();
-    SecurityProtocols.getInstance().addPrivacyProtocol(new Priv3DES());
+  private static SecurityProtocols setupSecurityProtocols(Set<AuthenticationProtocol> authenticationProtocols,
+                                                          Set<PrivacyProtocol> privacyProtocols,
+                                                          boolean mpv3Enabled) {
+    SecurityProtocols securityProtocols = SecurityProtocols.getInstance();
+    securityProtocols.addDefaultProtocols();
+
+    if (mpv3Enabled) {
+      if (authenticationProtocols.contains(AuthenticationProtocol.MD5)) {
+        securityProtocols.addAuthenticationProtocol(new AuthMD5());
+      }
+      if (authenticationProtocols.contains(AuthenticationProtocol.SHA)) {
+        securityProtocols.addAuthenticationProtocol(new AuthSHA());
+      }
+      if (privacyProtocols.contains(PrivacyProtocol.DES3)) {
+        securityProtocols.addPrivacyProtocol(new Priv3DES());
+      }
+      if (privacyProtocols.contains(PrivacyProtocol.AES128)) {
+        securityProtocols.addPrivacyProtocol(new PrivAES128());
+      }
+    }
+
+    return securityProtocols;
   }
 
-  private static MessageDispatcher createMessageDispatcher(ThreadPool threadPool) {
-    // TODO Add MPv3 (usm, processingmodel)
+  private OID convertPrivacyProtocol(PrivacyProtocol privacyProtocol) {
+    switch (privacyProtocol) {
+      case DES3:
+        return Priv3DES.ID;
+      case AES128:
+        return PrivAES128.ID;
+      default:
+        return PrivAES128.ID;
+    }
+  }
+
+  private OID convertAuthenticationProtocol(AuthenticationProtocol authenticationProtocol) {
+    switch (authenticationProtocol) {
+      case MD5:
+        return AuthMD5.ID;
+      case SHA:
+        return AuthSHA.ID;
+      default:
+        return AuthMD5.ID;
+    }
+  }
+
+  private void setupMpv3(Snmp snmp, SnmpTrapSourceConnectorConfig config, SecurityProtocols sp) {
+    MPv3 mpv3 = ((MPv3) snmp.getMessageProcessingModel(MPv3.ID));
+    USM usm = new USM(sp, new OctetString(snmp.getLocalEngineID()), 0);
+    SecurityModels sm = SecurityModels.getInstance().addSecurityModel(usm);
+    if (config.username != null && config.privacyPassphrase != null && config.authenticationPassphrase != null) {
+      UsmUser uu = new UsmUser(
+          new OctetString(config.username),
+          convertAuthenticationProtocol(config.authenticationProtocol),
+          new OctetString(config.authenticationPassphrase),
+          convertPrivacyProtocol(config.privacyProtocol),
+          new OctetString(config.privacyPassphrase)
+      );
+      usm.addUser(uu);
+    }
+    mpv3.setSecurityModels(sm);
+  }
+
+  private static MessageDispatcher createMessageDispatcher(ThreadPool threadPool, boolean mpv3Enabled) {
     MultiThreadedMessageDispatcher md = new MultiThreadedMessageDispatcher(threadPool, new MessageDispatcherImpl());
     md.addMessageProcessingModel(new MPv1());
     md.addMessageProcessingModel(new MPv2c());
-    setupSecurityProtocols();
+    if (mpv3Enabled) {
+      md.addMessageProcessingModel(new MPv3());
+    }
     return md;
   }
 
@@ -188,5 +268,9 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
 
   public SnmpTrapSourceConnectorConfig getConfig() {
     return config;
+  }
+
+  public Snmp getSnmp() {
+    return snmp;
   }
 }

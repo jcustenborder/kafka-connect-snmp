@@ -1,4 +1,5 @@
 /**
+ * Copyright © 2021 Elisa Oyj
  * Copyright © 2017 Jeremy Custenborder (jcustenborder@gmail.com)
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 @DocumentationImportant("This connector listens on a network port. Running more than one task or running in distributed " +
-        "mode can cause some undesired effects if another task already has the port open. It is recommended that you run this " +
-        "connector in :term:`Standalone Mode`.")
+    "mode can cause some undesired effects if another task already has the port open. It is recommended that you run this " +
+    "connector in :term:`Standalone Mode`.")
 @Description("Connector is used to receive syslog messages over UDP.")
 public class SnmpTrapSourceConnector extends SourceConnector {
 

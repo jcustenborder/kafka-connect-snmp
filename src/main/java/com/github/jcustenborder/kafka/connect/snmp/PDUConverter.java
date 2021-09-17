@@ -1,4 +1,5 @@
 /**
+ * Copyright © 2021 Elisa Oyj
  * Copyright © 2017 Jeremy Custenborder (jcustenborder@gmail.com)
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,30 +41,30 @@ public class PDUConverter {
   private static final Logger log = LoggerFactory.getLogger(PDUConverter.class);
   private final Time time;
   static final Schema KEY_SCHEMA = SchemaBuilder.struct()
-          .name("com.github.jcustenborder.kafka.connect.snmp.TrapKey")
-          .field(KeySchemaConstants.FIELD_PEER_ADDRESS, SchemaBuilder.string().doc("Remote address of the host sending the trap.").build())
-          .build();
+      .name("com.github.jcustenborder.kafka.connect.snmp.TrapKey")
+      .field(KeySchemaConstants.FIELD_PEER_ADDRESS, SchemaBuilder.string().doc("Remote address of the host sending the trap.").build())
+      .build();
   static final Schema VARIABLE_BINDING_SCHEMA = SchemaBuilder.struct()
-          .name("com.github.jcustenborder.kafka.connect.snmp.VariableBinding")
-          .field(VariableBindingConstants.FIELD_OID, SchemaBuilder.string().doc("OID.").build())
-          .field(VariableBindingConstants.FIELD_TYPE, SchemaBuilder.string().doc("Syntax type for variable binding.").build())
-          .field(VariableBindingConstants.FIELD_COUNTER32, SchemaBuilder.int32().doc("Counter32 value.").optional().build())
-          .field(VariableBindingConstants.FIELD_COUNTER64, SchemaBuilder.int64().doc("Counter64 value.").optional().build())
-          .field(VariableBindingConstants.FIELD_GAUGE32, SchemaBuilder.int32().doc("Gauge32 value.").optional().build())
-          .field(VariableBindingConstants.FIELD_INTEGER, SchemaBuilder.int32().doc("Integer value.").optional().build())
-          .field(VariableBindingConstants.FIELD_IPADDRESS, SchemaBuilder.string().doc("IpAddress value.").optional().build())
-          .field(VariableBindingConstants.FIELD_NULL, SchemaBuilder.string().doc("null value.").optional().build())
-          .field(VariableBindingConstants.FIELD_OBJECTIDENTIFIER, SchemaBuilder.string().doc("OID value.").optional().build())
-          .field(VariableBindingConstants.FIELD_OCTETSTRING, SchemaBuilder.string().doc("Octet string value.").optional().build())
-          .field(VariableBindingConstants.FIELD_OPAQUE, SchemaBuilder.string().doc("opaque value.").optional().build())
-          .field(VariableBindingConstants.FIELD_TIMETICKS, SchemaBuilder.int32().doc("timeticks value.").optional().build())
-          .build();
+      .name("com.github.jcustenborder.kafka.connect.snmp.VariableBinding")
+      .field(VariableBindingConstants.FIELD_OID, SchemaBuilder.string().doc("OID.").build())
+      .field(VariableBindingConstants.FIELD_TYPE, SchemaBuilder.string().doc("Syntax type for variable binding.").build())
+      .field(VariableBindingConstants.FIELD_COUNTER32, SchemaBuilder.int32().doc("Counter32 value.").optional().build())
+      .field(VariableBindingConstants.FIELD_COUNTER64, SchemaBuilder.int64().doc("Counter64 value.").optional().build())
+      .field(VariableBindingConstants.FIELD_GAUGE32, SchemaBuilder.int32().doc("Gauge32 value.").optional().build())
+      .field(VariableBindingConstants.FIELD_INTEGER, SchemaBuilder.int32().doc("Integer value.").optional().build())
+      .field(VariableBindingConstants.FIELD_IPADDRESS, SchemaBuilder.string().doc("IpAddress value.").optional().build())
+      .field(VariableBindingConstants.FIELD_NULL, SchemaBuilder.string().doc("null value.").optional().build())
+      .field(VariableBindingConstants.FIELD_OBJECTIDENTIFIER, SchemaBuilder.string().doc("OID value.").optional().build())
+      .field(VariableBindingConstants.FIELD_OCTETSTRING, SchemaBuilder.string().doc("Octet string value.").optional().build())
+      .field(VariableBindingConstants.FIELD_OPAQUE, SchemaBuilder.string().doc("opaque value.").optional().build())
+      .field(VariableBindingConstants.FIELD_TIMETICKS, SchemaBuilder.int32().doc("timeticks value.").optional().build())
+      .build();
   static final Schema VALUE_SCHEMA = SchemaBuilder.struct()
-          .name("com.github.jcustenborder.kafka.connect.snmp.Trap")
-          .field(ValueSchemaConstants.FIELD_PEER_ADDRESS, SchemaBuilder.string().doc("Remote address of the host sending the trap.").build())
-          .field(ValueSchemaConstants.FIELD_SECURITY_NAME, SchemaBuilder.string().doc("Community name the event was sent to.").build())
-          .field(ValueSchemaConstants.FIELD_VARIABLES, SchemaBuilder.array(VARIABLE_BINDING_SCHEMA).doc("Variables for this trap.").build())
-          .build();
+      .name("com.github.jcustenborder.kafka.connect.snmp.Trap")
+      .field(ValueSchemaConstants.FIELD_PEER_ADDRESS, SchemaBuilder.string().doc("Remote address of the host sending the trap.").build())
+      .field(ValueSchemaConstants.FIELD_SECURITY_NAME, SchemaBuilder.string().doc("Community name the event was sent to.").build())
+      .field(ValueSchemaConstants.FIELD_VARIABLES, SchemaBuilder.array(VARIABLE_BINDING_SCHEMA).doc("Variables for this trap.").build())
+      .build();
 
   private final SnmpTrapSourceConnectorConfig config;
 
@@ -154,7 +155,7 @@ public class PDUConverter {
         break;
       default:
         throw new UnsupportedOperationException(
-                String.format("%s is an unsupported syntaxType.", binding.getSyntax())
+            String.format("%s is an unsupported syntaxType.", binding.getSyntax())
         );
     }
 
@@ -189,27 +190,27 @@ public class PDUConverter {
       AtomicInteger ai = new AtomicInteger(0);
 
       List<Struct> bindingStructs = pduContents
-              .stream()
-              .map((vb) -> {
-                log.trace("convert() - processing VariableBinding({})", ai.getAndIncrement());
-                return convertVariableBinding(vb);
-              })
-              .collect(Collectors.toList());
+          .stream()
+          .map((vb) -> {
+            log.trace("convert() - processing VariableBinding({})", ai.getAndIncrement());
+            return convertVariableBinding(vb);
+          })
+          .collect(Collectors.toList());
 
       log.trace("convert() - Setting {} variables to {}", bindingStructs.size(), ValueSchemaConstants.FIELD_VARIABLES);
       value.put(ValueSchemaConstants.FIELD_VARIABLES, bindingStructs);
     }
 
     return new SourceRecord(
-            EMPTY,
-            EMPTY,
-            this.config.topic,
-            null,
-            KEY_SCHEMA,
-            key,
-            VALUE_SCHEMA,
-            value,
-            this.time.milliseconds()
+        EMPTY,
+        EMPTY,
+        this.config.topic,
+        null,
+        KEY_SCHEMA,
+        key,
+        VALUE_SCHEMA,
+        value,
+        this.time.milliseconds()
     );
   }
 
