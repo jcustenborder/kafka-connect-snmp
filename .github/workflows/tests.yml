@@ -5,6 +5,7 @@ on: [pull_request]
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         java: [ '11', '15' ]

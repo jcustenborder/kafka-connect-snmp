@@ -12,6 +12,7 @@ env:
 jobs:
   build-tar:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -31,6 +32,7 @@ jobs:
   build-and-publish-image:
     needs: build-tar
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@master
       - name: Download the tarball
