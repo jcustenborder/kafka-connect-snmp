@@ -55,13 +55,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
   static final Logger log = LoggerFactory.getLogger(SnmpTrapSourceTask.class);
-  private SecurityProtocols securityProtocols;
 
   @Override
   public String version() {
@@ -90,7 +90,7 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
     log.info("start() - Configuring ThreadPool DispatchPool to {} thread(s)", this.config.dispatcherThreadPoolSize);
     this.threadPool = ThreadPool.create("DispatchPool", this.config.dispatcherThreadPoolSize);
     this.messageDispatcher = createMessageDispatcher(this.threadPool, this.config.mpv3Enabled);
-    this.securityProtocols = setupSecurityProtocols(config.authenticationProtocols, config.privacyProtocols, this.config.mpv3Enabled);
+    SecurityProtocols securityProtocols = setupSecurityProtocols(config.authenticationProtocols, config.privacyProtocols, this.config.mpv3Enabled);
 
     try {
       this.transport.listen();
@@ -102,23 +102,22 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
     this.snmp.addCommandResponder(this);
 
     if (this.config.mpv3Enabled) {
-      setupMpv3(this.snmp, this.config, this.securityProtocols);
+      setupMpv3Usm(this.snmp, this.config, securityProtocols);
     }
 
   }
 
 
   @Override
-  public List<SourceRecord> poll() throws InterruptedException {
-    List<SourceRecord> records = new ArrayList<>(this.config.batchSize);
-
-    while (!this.recordBuffer.drain(records)) {
-      log.trace("poll() - no records found sleeping {} ms.", this.config.pollBackoffMs);
-      this.time.sleep(this.config.pollBackoffMs);
+  public List<SourceRecord> poll() {
+    try {
+      List<SourceRecord> records = new ArrayList<>(this.config.batchSize);
+      this.recordBuffer.drain(records, this.config.pollBackoffMs);
+      return records;
+    } catch (InterruptedException err) {
+      log.error("poll() - Issue with draining", err);
+      return Collections.emptyList();
     }
-
-    log.debug("poll() - returning {} record(s).", records.size());
-    return records;
   }
 
   @Override
@@ -131,7 +130,11 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
 
     log.info("stop() - closing transport.");
     try {
-      this.transport.close();
+      if (this.transport != null) {
+        this.transport.close();
+      } else {
+        log.error("Transport was null.");
+      }
     } catch (IOException e) {
       log.error("Exception thrown while closing transport.", e);
     }
@@ -235,7 +238,8 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
     }
   }
 
-  private void setupMpv3(Snmp snmp, SnmpTrapSourceConnectorConfig config, SecurityProtocols sp) {
+  private void setupMpv3Usm(Snmp snmp, SnmpTrapSourceConnectorConfig config, SecurityProtocols sp) {
+    log.info("Setting up Mpv3 with protocols {} and {}", config.authenticationProtocol, config.privacyProtocol);
     MPv3 mpv3 = ((MPv3) snmp.getMessageProcessingModel(MPv3.ID));
     USM usm = new USM(sp, new OctetString(snmp.getLocalEngineID()), 0);
     SecurityModels sm = SecurityModels.getInstance().addSecurityModel(usm);
@@ -248,6 +252,7 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
           new OctetString(config.privacyPassphrase)
       );
       usm.addUser(uu);
+      log.info("Added user {} to handle MPv3", config.username);
     }
     mpv3.setSecurityModels(sm);
   }

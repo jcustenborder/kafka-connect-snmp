@@ -46,6 +46,7 @@ public class SnmpTrapSourceConnector extends SourceConnector {
 
   @Override
   public void start(Map<String, String> settings) {
+    log.info("Starting task {}", this.taskClass().getSimpleName());
     this.config = new SnmpTrapSourceConnectorConfig(settings);
     this.settings = settings;
   }
@@ -65,7 +66,7 @@ public class SnmpTrapSourceConnector extends SourceConnector {
 
   @Override
   public void stop() {
-
+    log.info("Shutting down task {}", this.taskClass().getSimpleName());
   }
 
   @Override

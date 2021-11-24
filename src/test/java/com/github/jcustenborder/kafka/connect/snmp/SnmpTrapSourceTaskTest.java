@@ -137,6 +137,7 @@ public class SnmpTrapSourceTaskTest {
 
     PDU trap = createV2Trap("1.2.3.4.5", "some string");
     snmp.send(trap, target, null, null);
+    Thread.sleep(5000);
     assertFalse(this.task.poll().isEmpty(), "There should be trap in buffer");
     assertTrue(this.task.getRecordBuffer().isEmpty(), "Buffer should be empty after polling.");
 

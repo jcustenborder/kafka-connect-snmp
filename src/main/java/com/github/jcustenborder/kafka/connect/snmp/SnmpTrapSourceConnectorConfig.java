@@ -56,7 +56,7 @@ public class SnmpTrapSourceConnectorConfig extends AbstractConfig {
 
   public static final String POLL_BACKOFF_MS_CONF = "poll.backoff.ms";
   static final String POLL_BACKOFF_MS_DOC = "The amount of time in ms to wait if no records are returned.";
-  static final long POLL_BACKOFF_MS_DEFAULT = 250;
+  static final int POLL_BACKOFF_MS_DEFAULT = 250;
 
   public static final String MPV3_ENABLED_CONF = "mpv3.enabled";
   static final String MPV3_ENABLED_DOC = "Configuration property to enable MPv3 support";
@@ -97,7 +97,7 @@ public class SnmpTrapSourceConnectorConfig extends AbstractConfig {
   public final int dispatcherThreadPoolSize;
   public final String topic;
   public final int batchSize;
-  public final long pollBackoffMs;
+  public final int pollBackoffMs;
   public final boolean mpv3Enabled;
   public final Set<AuthenticationProtocol> authenticationProtocols;
   public final Set<PrivacyProtocol> privacyProtocols;
@@ -117,7 +117,7 @@ public class SnmpTrapSourceConnectorConfig extends AbstractConfig {
     this.dispatcherThreadPoolSize = this.getInt(DISPATCHER_THREAD_POOL_SIZE_CONF);
     this.topic = this.getString(TOPIC_CONF);
     this.batchSize = this.getInt(BATCH_SIZE_CONF);
-    this.pollBackoffMs = this.getLong(POLL_BACKOFF_MS_CONF);
+    this.pollBackoffMs = this.getInt(POLL_BACKOFF_MS_CONF);
     this.mpv3Enabled = this.getBoolean(MPV3_ENABLED_CONF);
     this.authenticationProtocols = this.getList(AUTHENTICATION_PROTOCOLS)
         .stream().map((s) -> AuthenticationProtocol.valueOf(s.toUpperCase()))
@@ -143,7 +143,7 @@ public class SnmpTrapSourceConnectorConfig extends AbstractConfig {
         .define(LISTEN_PROTOCOL_CONF, Type.STRING, LISTEN_PROTOCOL_DEFAULT, ConfigDef.ValidString.in("UDP", "TCP"), Importance.LOW, LISTEN_PROTOCOL_DOC)
         .define(DISPATCHER_THREAD_POOL_SIZE_CONF, Type.INT, DISPATCHER_THREAD_POOL_SIZE_DEFAULT, ConfigDef.Range.between(1, 100), Importance.LOW, DISPATCHER_THREAD_POOL_SIZE_DOC)
         .define(BATCH_SIZE_CONF, Type.INT, BATCH_SIZE_DEFAULT, ConfigDef.Range.between(10, Integer.MAX_VALUE), Importance.MEDIUM, BATCH_SIZE_DOC)
-        .define(POLL_BACKOFF_MS_CONF, Type.LONG, POLL_BACKOFF_MS_DEFAULT, ConfigDef.Range.between(10, Integer.MAX_VALUE), Importance.MEDIUM, POLL_BACKOFF_MS_DOC)
+        .define(POLL_BACKOFF_MS_CONF, Type.INT, POLL_BACKOFF_MS_DEFAULT, ConfigDef.Range.between(10, Integer.MAX_VALUE), Importance.MEDIUM, POLL_BACKOFF_MS_DOC)
         .define(MPV3_ENABLED_CONF, Type.BOOLEAN, MPV3_ENABLED_DEFAULT, Importance.MEDIUM, MPV3_ENABLED_DOC)
 
         // MPv3 configs
