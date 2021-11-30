@@ -241,7 +241,8 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
   private void setupMpv3Usm(Snmp snmp, SnmpTrapSourceConnectorConfig config, SecurityProtocols sp) {
     log.info("Setting up Mpv3 with protocols {} and {}", config.authenticationProtocol, config.privacyProtocol);
     MPv3 mpv3 = ((MPv3) snmp.getMessageProcessingModel(MPv3.ID));
-    USM usm = new USM(sp, new OctetString(snmp.getLocalEngineID()), 0);
+    USM usm = new USM(sp, new OctetString("SNMP Connector"), 0);
+    usm.setEngineDiscoveryEnabled(true);
     SecurityModels sm = SecurityModels.getInstance().addSecurityModel(usm);
     if (config.username != null && config.privacyPassphrase != null && config.authenticationPassphrase != null) {
       UsmUser uu = new UsmUser(
