@@ -143,8 +143,10 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
 
   @Override
   public void processPdu(CommandResponderEvent event) {
-    log.trace("processPdu() - Received event from {}", event.getPeerAddress());
+    log.debug("processPdu() - Received event from {}", event.getPeerAddress());
     PDU pdu = event.getPDU();
+
+    log.debug("processPdu() - Received PDU is {}", pdu);
 
     if (null == pdu) {
       log.warn("Null PDU received from {}", event.getPeerAddress());
@@ -152,7 +154,7 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
     }
 
     if (PDU.TRAP != pdu.getType()) {
-      log.trace("Message received from {} was not a trap. message={}", event.getPeerAddress(), event);
+      log.debug("Message received from {} was not a trap. message={}", event.getPeerAddress(), event);
       return;
     }
 
@@ -239,7 +241,7 @@ public class SnmpTrapSourceTask extends SourceTask implements CommandResponder {
   }
 
   private void setupMpv3Usm(Snmp snmp, SnmpTrapSourceConnectorConfig config, SecurityProtocols sp) {
-    log.info("Setting up Mpv3 with protocols {} and {}", config.authenticationProtocol, config.privacyProtocol);
+    log.debug("Setting up Mpv3 with protocols {} and {}", config.authenticationProtocol, config.privacyProtocol);
     MPv3 mpv3 = ((MPv3) snmp.getMessageProcessingModel(MPv3.ID));
     USM usm = new USM(sp, new OctetString("SNMP Connector"), 0);
     usm.setEngineDiscoveryEnabled(true);
