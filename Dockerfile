@@ -1,4 +1,4 @@
-FROM quay.io/strimzi/kafka:0.26.1-kafka-2.8.1
+FROM quay.io/strimzi/kafka:0.27.0-kafka-2.8.1
 
 COPY kafka-connect-snmp/usr/share/kafka-connect/kafka-connect-snmp/ /opt/kafka/plugins/java/kafka-connect-snmp/
 
