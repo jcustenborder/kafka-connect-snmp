@@ -11,6 +11,17 @@ Supported MPv3 standards are
 
 See [Connectors to Kafka](https://docs.confluent.io/current/connect/managing/index.html) for more info.
 
+# Running in development
+## MPv3 configuration properties
+
+The development setup runs with `docker-compose`
+
+Use
+```
+bin/run.sh
+```
+to build, start the environment and configure the connector using REST API
+
 # Configuration
 
 `kafka-connect-snmp` can be configured with properties or
